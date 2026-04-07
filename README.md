@@ -61,19 +61,78 @@ claude-stats digest --ai         # today's work digest + AI summary
 
 ### Available commands
 
-| Command | Description |
-|---------|-------------|
-| `tokens` | Token consumption, cost breakdown by project and model |
-| `tools` | Tool call frequency, error rates, Bash subcommands, chains |
-| `prompts` | Permission prompt analysis, allowlist suggestions |
-| `heatmap` | Activity by hour/day, calendar view, top sessions |
-| `lines` | Lines written, edited, removed by extension and project |
-| `sessions` | Context growth, duration, bloat detection, restart advice |
-| `efficiency` | Lines/turn, wasted turns, productivity ratios |
-| `report` | Executive summary combining all analytics |
-| `digest` | What you worked on: tickets, branches, MRs, commits |
+#### `tokens` — Token Usage & Cost
 
-The `digest` command supports `--ai` for a Claude-powered natural language summary (requires the `claude` CLI).
+Shows input/output/cache token counts and estimated cost, broken down by project and model. Includes a cost breakdown showing where your spend goes (cache reads, output, cache creation).
+
+```bash
+claude-stats tokens --week
+```
+
+#### `tools` — Tool Call Analytics
+
+Ranks every tool by call count and error rate. Shows workflow balance (read vs write vs agent), Bash subcommand breakdown, common tool chains (e.g., Read -> Edit), and per-project tool usage.
+
+```bash
+claude-stats tools --month
+```
+
+#### `prompts` — Permission Prompt Analysis
+
+Simulates your `settings.json` allowlist against all tool calls to show which ones required manual approval. Suggests new allow patterns to reduce prompt friction and estimates how many prompts each pattern would save.
+
+```bash
+claude-stats prompts --week
+```
+
+#### `heatmap` — Activity Heatmap
+
+ASCII heatmaps showing messages and cost by hour-of-day and day-of-week. Includes hourly/daily summaries, a calendar view of the last 30 days, top sessions by cost, and peak hour detection. Uses your system timezone.
+
+```bash
+claude-stats heatmap --month
+```
+
+#### `lines` — Lines of Code
+
+Tracks lines written (Write tool), added, and removed (Edit tool). Breaks down by file extension, project, and individual file. Shows net lines, throughput, and identifies your most-touched files.
+
+```bash
+claude-stats lines --week
+```
+
+#### `sessions` — Session Health
+
+Analyzes individual sessions for context growth, duration vs productivity, and error rates. Flags bloated sessions (>200% context growth) and recommends when to restart. Compares productivity across session length buckets.
+
+```bash
+claude-stats sessions --week
+```
+
+#### `efficiency` — Productivity Metrics
+
+Measures lines/turn, files/turn, output tokens/turn, and error rate. Classifies turns as productive (Write/Edit), research (Read/Search), or overhead (errors). Per-project efficiency comparison and quota impact estimation.
+
+```bash
+claude-stats efficiency --week
+```
+
+#### `report` — Executive Summary
+
+Combines all analytics into one compact view: overview, daily activity sparkline, project leaderboard, top tools, session health, peak hours, permission prompts, and a 5-metric scorecard with an overall grade.
+
+```bash
+claude-stats report --week
+```
+
+#### `digest` — Work Digest
+
+Human-readable summary of what you worked on: projects, Jira tickets, branches, MRs created, commits, deploys, AWS commands, and key files changed. Supports `--ai` for a Claude-powered natural language summary with a ready-to-paste standup message (requires the `claude` CLI).
+
+```bash
+claude-stats digest --week
+claude-stats digest --ai          # includes AI-generated summary
+```
 
 ### Time filters
 
