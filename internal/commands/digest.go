@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -610,8 +611,21 @@ func buildAIContext(data *digestData, label string) string {
 func runAISummary(context, label string) {
 	format.Header("🤖  AI ANALYSIS", "─")
 	fmt.Println()
-	fmt.Println("  Generating AI summary...")
-	fmt.Println()
+	fmt.Print("  Generating AI summary")
+	stop := make(chan struct{})
+	go func() {
+		frames := []string{".", "..", "..."}
+		i := 0
+		for {
+			select {
+			case <-stop:
+				return
+			case <-time.After(500 * time.Millisecond):
+				fmt.Printf("\r  Generating AI summary%-3s", frames[i%len(frames)])
+				i++
+			}
+		}
+	}()
 
 	period := "today"
 	switch {
@@ -652,10 +666,20 @@ DATA:
 		}
 	}
 
-	cmd := exec.Command("claude", "-p", "--model", "opus")
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancel()
+
+	cmd := exec.CommandContext(ctx, "claude", "-p", "--model", "opus")
 	cmd.Stdin = strings.NewReader(prompt)
 	cmd.Env = filtered
 	out, err := cmd.Output()
+	close(stop)
+	fmt.Print("\r\033[K") // clear the spinner line
+	if ctx.Err() == context.DeadlineExceeded {
+		fmt.Println("  AI summary timed out after 60s. Try again or skip with option 1.")
+		fmt.Println()
+		return
+	}
 	if err != nil {
 		fmt.Printf("  Could not generate AI summary: %v\n", err)
 		fmt.Println()
