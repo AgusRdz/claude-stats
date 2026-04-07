@@ -6,16 +6,39 @@ All data is read locally from `~/.claude/projects/` session files. Nothing is se
 
 ## Install
 
+### One-liner (Linux / macOS / WSL)
+
 ```bash
-pip install git+https://github.com/Andrevops/claude-stats.git
+curl -fsSL https://raw.githubusercontent.com/Andrevops/claude-stats/main/install.sh | sh
 ```
 
-Or clone and install:
+### Windows (PowerShell)
+
+```powershell
+irm https://raw.githubusercontent.com/Andrevops/claude-stats/main/install.ps1 | iex
+```
+
+### Go install
+
+```bash
+go install github.com/Andrevops/claude-stats/cmd/claude-stats@latest
+```
+
+### Build from source
 
 ```bash
 git clone https://github.com/Andrevops/claude-stats.git
 cd claude-stats
-pip install .
+make install
+```
+
+### Docker (no install required)
+
+```bash
+git clone https://github.com/Andrevops/claude-stats.git
+cd claude-stats
+make docker-run              # interactive menu
+make docker-run-cmd CMD="tokens --week"
 ```
 
 ## Usage
@@ -63,20 +86,12 @@ All commands accept these options:
 YYYY-MM-DD       Specific date
 ```
 
-## Install with pipx (recommended)
-
-[pipx](https://pipx.pypa.io/) installs in an isolated environment so it won't interfere with your system Python:
-
-```bash
-pipx install git+https://github.com/Andrevops/claude-stats.git
-```
-
 ## Requirements
 
-- Python 3.10+
 - Claude Code (the data source — `~/.claude/projects/`)
-- `~/.local/bin` on your `$PATH` (default on most Linux/WSL distros)
-- No third-party Python dependencies
+- `~/.local/bin` on your `$PATH` (default on most Linux/WSL/macOS)
+
+No runtime dependencies — single static binary.
 
 ## License
 
