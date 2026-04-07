@@ -44,6 +44,7 @@ func showMenu() {
 	fmt.Printf("\n%s", bold)
 	fmt.Println("  ╔═══════════════════════════════════════════════════╗")
 	fmt.Println("  ║            Claude Code Analytics Suite            ║")
+	fmt.Println("  ║                   by Andrevops                    ║")
 	fmt.Println("  ╚═══════════════════════════════════════════════════╝")
 	fmt.Printf("%s\n", reset)
 
