@@ -44,7 +44,7 @@ func Efficiency(args []string) {
 		p := proj[projName]
 
 		// Track per-turn state
-		turnHasWrite, turnHasRead, turnHasError := false, false, false
+		turnHasWrite, turnHasError := false, false
 		inAssistantTurn := false
 
 		session.ScanLines(f, func(line session.LogLine) {
@@ -62,7 +62,7 @@ func Efficiency(args []string) {
 						researchTurns++
 					}
 				}
-				turnHasWrite, turnHasRead, turnHasError = false, false, false
+				turnHasWrite, turnHasError = false, false
 				inAssistantTurn = false
 
 				totalHumanTurns++
@@ -120,8 +120,6 @@ func Efficiency(args []string) {
 							filesTouched[ei.FilePath] = true
 							p.files[ei.FilePath] = true
 						}
-					case "Read", "Glob", "Grep", "WebSearch", "WebFetch":
-						turnHasRead = true
 					}
 				}
 			}
