@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.2.4 (2026-04-07)
+
+### Bug Fixes
+
+- correct error detection and allowlist pattern matching
+
+### Other
+
+- docs: add update, verification, and --ai flag documentation
+
+[Full changelog](https://github.com/Andrevops/claude-stats/compare/v0.2.3...v0.2.4)
+
 ## v0.2.3 (2026-04-07)
 
 ### Bug Fixes
