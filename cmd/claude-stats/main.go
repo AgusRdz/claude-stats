@@ -2,9 +2,11 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
 	"os"
-	"os/exec"
 	"runtime"
 	"strings"
 
@@ -163,32 +165,96 @@ func printHelp() {
 }
 
 func selfUpdate() {
-	fmt.Printf("Updating claude-stats (current: %s)...\n\n", version)
+	fmt.Printf("Updating claude-stats (current: %s)...\n", version)
 
-	var cmd *exec.Cmd
-	switch runtime.GOOS {
-	case "windows":
-		// PowerShell: download and run install.ps1
-		script := `irm https://raw.githubusercontent.com/Andrevops/claude-stats/main/install.ps1 | iex`
-		cmd = exec.Command("powershell.exe", "-NoProfile", "-NonInteractive", "-Command", script)
-	default:
-		// sh: download and run install.sh
-		script := `curl -fsSL https://raw.githubusercontent.com/Andrevops/claude-stats/main/install.sh | sh`
-		cmd = exec.Command("sh", "-c", script)
-	}
+	const repo = "Andrevops/claude-stats"
+	apiURL := fmt.Sprintf("https://api.github.com/repos/%s/releases/latest", repo)
 
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	if err := cmd.Run(); err != nil {
-		fmt.Fprintf(os.Stderr, "\nupdate failed: %v\n\n", err)
-		fmt.Fprintln(os.Stderr, "Manual install:")
-		if runtime.GOOS == "windows" {
-			fmt.Fprintln(os.Stderr, "  irm https://raw.githubusercontent.com/Andrevops/claude-stats/main/install.ps1 | iex")
-		} else {
-			fmt.Fprintln(os.Stderr, "  curl -fsSL https://raw.githubusercontent.com/Andrevops/claude-stats/main/install.sh | sh")
-		}
+	// Get latest release tag
+	resp, err := http.Get(apiURL)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "failed to check for updates: %v\n", err)
 		os.Exit(1)
 	}
+	defer resp.Body.Close()
+
+	var release struct {
+		TagName string `json:"tag_name"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&release); err != nil {
+		fmt.Fprintf(os.Stderr, "failed to parse release info: %v\n", err)
+		os.Exit(1)
+	}
+
+	if release.TagName == version {
+		fmt.Printf("already up to date (%s)\n", version)
+		return
+	}
+
+	fmt.Printf("updating %s → %s\n\n", version, release.TagName)
+
+	// Determine binary name
+	goos := runtime.GOOS
+	goarch := runtime.GOARCH
+	ext := ""
+	if goos == "windows" {
+		ext = ".exe"
+	}
+	binaryName := fmt.Sprintf("claude-stats-%s-%s%s", goos, goarch, ext)
+	downloadURL := fmt.Sprintf("https://github.com/%s/releases/download/%s/%s", repo, release.TagName, binaryName)
+
+	// Download to temp file
+	fmt.Printf("downloading %s...\n", binaryName)
+	dlResp, err := http.Get(downloadURL)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "download failed: %v\n", err)
+		os.Exit(1)
+	}
+	defer dlResp.Body.Close()
+
+	if dlResp.StatusCode != 200 {
+		fmt.Fprintf(os.Stderr, "download failed: HTTP %d\n", dlResp.StatusCode)
+		os.Exit(1)
+	}
+
+	// Find where the current binary lives
+	exe, err := os.Executable()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "cannot determine binary path: %v\n", err)
+		os.Exit(1)
+	}
+
+	// Create temp file in same directory as binary so Rename is same-filesystem
+	exeDir := exe[:strings.LastIndex(exe, string(os.PathSeparator))+1]
+	tmpFile, err := os.CreateTemp(exeDir, ".claude-stats-update-*")
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "cannot create temp file: %v\n", err)
+		os.Exit(1)
+	}
+	tmpPath := tmpFile.Name()
+
+	if _, err := io.Copy(tmpFile, dlResp.Body); err != nil {
+		tmpFile.Close()
+		os.Remove(tmpPath)
+		fmt.Fprintf(os.Stderr, "download failed: %v\n", err)
+		os.Exit(1)
+	}
+	tmpFile.Close()
+
+	if err := os.Chmod(tmpPath, 0755); err != nil {
+		os.Remove(tmpPath)
+		fmt.Fprintf(os.Stderr, "chmod failed: %v\n", err)
+		os.Exit(1)
+	}
+
+	// Atomic replace
+	if err := os.Rename(tmpPath, exe); err != nil {
+		os.Remove(tmpPath)
+		fmt.Fprintf(os.Stderr, "replace failed: %v\n", err)
+		os.Exit(1)
+	}
+
+	fmt.Printf("\nupdated to %s\n", release.TagName)
 }
 
 func main() {
