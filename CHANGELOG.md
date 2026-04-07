@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.2.0 (2026-04-07)
+
+### Features
+
+- add ED25519 binary signing and build provenance attestation
+
+### Bug Fixes
+
+- invalid Docker container name in docker-install target
+- upgrade GitHub Actions to Node.js 24 compatible versions
+
+[Full changelog](https://github.com/Andrevops/claude-stats/compare/v0.1.0...v0.2.0)
+
 ## v0.1.0 (2026-04-07)
 
 ### Features
