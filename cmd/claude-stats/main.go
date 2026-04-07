@@ -126,7 +126,7 @@ func interactiveMenu() {
 			}
 		}
 
-		fmt.Println()
+		fmt.Printf("\n  %sRunning %s...%s\n\n", dim, c.name, reset)
 		c.fn(extraArgs)
 		fmt.Println()
 		fmt.Print("  Press Enter to continue...")

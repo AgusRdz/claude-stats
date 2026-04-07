@@ -146,8 +146,8 @@ func Sessions(args []string) {
 		sort.Slice(highGrowth, func(i, j int) bool {
 			return highGrowth[i].contextGrowth > highGrowth[j].contextGrowth
 		})
-		for _, s := range highGrowth {
-			if len(highGrowth) > 5 {
+		for i, s := range highGrowth {
+			if i >= 5 {
 				break
 			}
 			fmt.Printf("    %s %5s %+.0f%% ctx  %d msgs  %s\n",

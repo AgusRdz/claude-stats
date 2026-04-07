@@ -35,8 +35,25 @@ Write-Host "installing claude-stats $($env:CLAUDE_STATS_VERSION) (windows/$Arch)
 # Create install dir
 New-Item -ItemType Directory -Force -Path $InstallDir | Out-Null
 
-# Download binary
-Invoke-WebRequest -Uri $Url -OutFile $Destination -UseBasicParsing
+# Download to temp file first (avoids locked-file error if binary is running)
+$TempDest = $Destination + ".new"
+Invoke-WebRequest -Uri $Url -OutFile $TempDest -UseBasicParsing
+
+# Replace binary with retries (Windows locks the file while process is running)
+$retries = 5
+for ($i = 0; $i -lt $retries; $i++) {
+    try {
+        Move-Item -Force $TempDest $Destination
+        break
+    } catch {
+        if ($i -eq $retries - 1) {
+            Remove-Item -Force $TempDest -ErrorAction SilentlyContinue
+            Write-Error "failed to replace binary after $retries attempts: $_"
+            exit 1
+        }
+        Start-Sleep -Milliseconds 500
+    }
+}
 
 Write-Host "installed claude-stats to $Destination"
 Write-Host ""
