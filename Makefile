@@ -44,9 +44,9 @@ docker-install:
 	@mkdir -p bin
 	docker build --target builder --build-arg VERSION=$(VERSION) \
 		-t $(IMAGE)-builder:$(VERSION) .
-	docker create --name _cs_extract $(IMAGE)-builder:$(VERSION)
-	docker cp _cs_extract:/$(BINARY) bin/$(BINARY)
-	docker rm _cs_extract
+	docker create --name cs-extract $(IMAGE)-builder:$(VERSION)
+	docker cp cs-extract:/$(BINARY) bin/$(BINARY)
+	docker rm cs-extract
 	@INSTALL_DIR="$$HOME/.local/bin"; \
 	mkdir -p "$$INSTALL_DIR"; \
 	cp bin/$(BINARY) "$$INSTALL_DIR/$(BINARY)"; \
