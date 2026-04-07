@@ -73,6 +73,8 @@ claude-stats digest --ai         # today's work digest + AI summary
 | `report` | Executive summary combining all analytics |
 | `digest` | What you worked on: tickets, branches, MRs, commits |
 
+The `digest` command supports `--ai` for a Claude-powered natural language summary (requires the `claude` CLI).
+
 ### Time filters
 
 All commands accept these options:
@@ -84,6 +86,27 @@ All commands accept these options:
 --month          Last 30 days
 --all            All time
 YYYY-MM-DD       Specific date
+```
+
+## Update
+
+```bash
+claude-stats update
+```
+
+The binary checks GitHub for the latest release, downloads it, and replaces itself atomically.
+
+## Verify release signatures
+
+Each release includes ED25519-signed checksums and GitHub build provenance attestation.
+
+```bash
+# Verify build provenance
+gh attestation verify claude-stats-linux-amd64 --repo Andrevops/claude-stats
+
+# Verify checksum signature
+curl -fsSL https://raw.githubusercontent.com/Andrevops/claude-stats/main/public_key.pem -o public_key.pem
+xxd -r -p checksums.txt.sig | openssl pkeyutl -verify -pubin -inkey public_key.pem -rawin -in checksums.txt -sigfile /dev/stdin
 ```
 
 ## Requirements
