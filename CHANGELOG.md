@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.2.1 (2026-04-07)
+
+### Bug Fixes
+
+- revert action-gh-release to v2, v3 does not exist
+
+[Full changelog](https://github.com/Andrevops/claude-stats/compare/v0.2.0...v0.2.1)
+
 ## v0.2.0 (2026-04-07)
 
 ### Features
