@@ -35,6 +35,13 @@ Write-Host "installing claude-stats $($env:CLAUDE_STATS_VERSION) (windows/$Arch)
 # Create install dir
 New-Item -ItemType Directory -Force -Path $InstallDir | Out-Null
 
+# Kill any running claude-stats processes that would lock the binary
+Get-Process -Name "claude-stats" -ErrorAction SilentlyContinue | ForEach-Object {
+    Write-Host "stopping running claude-stats process (PID $($_.Id))..."
+    $_.Kill()
+    $_.WaitForExit(3000) | Out-Null
+}
+
 # Download to temp file first (avoids locked-file error if binary is running)
 $TempDest = $Destination + ".new"
 Invoke-WebRequest -Uri $Url -OutFile $TempDest -UseBasicParsing
