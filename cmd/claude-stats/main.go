@@ -168,11 +168,11 @@ func selfUpdate() {
 	switch runtime.GOOS {
 	case "windows":
 		// PowerShell: download and run install.ps1
-		script := `irm https://raw.githubusercontent.com/Andrevops/claude-stats/main/install.ps1 | iex`
+		script := `irm https://raw.githubusercontent.com/AgusRdz/claude-stats/main/install.ps1 | iex`
 		cmd = exec.Command("powershell.exe", "-NoProfile", "-NonInteractive", "-Command", script)
 	default:
 		// sh: download and run install.sh
-		script := `curl -fsSL https://raw.githubusercontent.com/Andrevops/claude-stats/main/install.sh | sh`
+		script := `curl -fsSL https://raw.githubusercontent.com/AgusRdz/claude-stats/main/install.sh | sh`
 		cmd = exec.Command("sh", "-c", script)
 	}
 
@@ -182,9 +182,9 @@ func selfUpdate() {
 		fmt.Fprintf(os.Stderr, "\nupdate failed: %v\n\n", err)
 		fmt.Fprintln(os.Stderr, "Manual install:")
 		if runtime.GOOS == "windows" {
-			fmt.Fprintln(os.Stderr, "  irm https://raw.githubusercontent.com/Andrevops/claude-stats/main/install.ps1 | iex")
+			fmt.Fprintln(os.Stderr, "  irm https://raw.githubusercontent.com/AgusRdz/claude-stats/main/install.ps1 | iex")
 		} else {
-			fmt.Fprintln(os.Stderr, "  curl -fsSL https://raw.githubusercontent.com/Andrevops/claude-stats/main/install.sh | sh")
+			fmt.Fprintln(os.Stderr, "  curl -fsSL https://raw.githubusercontent.com/AgusRdz/claude-stats/main/install.sh | sh")
 		}
 		os.Exit(1)
 	}
