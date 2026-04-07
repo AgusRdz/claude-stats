@@ -608,7 +608,7 @@ func buildAIContext(data *digestData, label string) string {
 	return strings.Join(lines, "\n")
 }
 
-func runAISummary(context, label string) {
+func runAISummary(data, label string) {
 	format.Header("🤖  AI ANALYSIS", "─")
 	fmt.Println()
 	fmt.Print("  Generating AI summary")
@@ -656,7 +656,7 @@ STANDUP: 2-3 sentence ready-to-paste standup for Slack.
 Keep under 150 words total.
 
 DATA:
-%s`, period, context)
+%s`, period, data)
 
 	env := os.Environ()
 	filtered := env[:0]
