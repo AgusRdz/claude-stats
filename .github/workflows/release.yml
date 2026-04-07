@@ -1,0 +1,68 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build & Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.21"
+          cache: true
+
+      - name: Build all platforms
+        run: |
+          VERSION="${GITHUB_REF_NAME}"
+          LDFLAGS="-X main.version=${VERSION} -s -w"
+          mkdir -p dist
+
+          GOOS=linux   GOARCH=amd64 go build -ldflags "$LDFLAGS" -o dist/claude-stats-linux-amd64   ./cmd/claude-stats
+          GOOS=linux   GOARCH=arm64 go build -ldflags "$LDFLAGS" -o dist/claude-stats-linux-arm64   ./cmd/claude-stats
+          GOOS=darwin  GOARCH=amd64 go build -ldflags "$LDFLAGS" -o dist/claude-stats-darwin-amd64  ./cmd/claude-stats
+          GOOS=darwin  GOARCH=arm64 go build -ldflags "$LDFLAGS" -o dist/claude-stats-darwin-arm64  ./cmd/claude-stats
+          GOOS=windows GOARCH=amd64 go build -ldflags "$LDFLAGS" -o dist/claude-stats-windows-amd64.exe ./cmd/claude-stats
+          GOOS=windows GOARCH=arm64 go build -ldflags "$LDFLAGS" -o dist/claude-stats-windows-arm64.exe ./cmd/claude-stats
+
+          chmod +x dist/claude-stats-linux-* dist/claude-stats-darwin-*
+
+      - name: Generate checksums
+        run: |
+          cd dist
+          sha256sum * > checksums.txt
+          cat checksums.txt
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          generate_release_notes: true
+          body: |
+            ## Install
+
+            **Linux / macOS / Git Bash:**
+            ```sh
+            curl -fsSL https://raw.githubusercontent.com/Andrevops/claude-stats/main/install.sh | sh
+            ```
+
+            **Windows PowerShell:**
+            ```powershell
+            irm https://raw.githubusercontent.com/Andrevops/claude-stats/main/install.ps1 | iex
+            ```
+
+            **Go:**
+            ```sh
+            go install github.com/Andrevops/claude-stats/cmd/claude-stats@latest
+            ```
