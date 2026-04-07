@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.2.2 (2026-04-07)
+
+### Bug Fixes
+
+- download to temp file before replacing binary during self-update
+- regenerate signing key pair
+
+[Full changelog](https://github.com/Andrevops/claude-stats/compare/v0.2.1...v0.2.2)
+
 ## v0.2.1 (2026-04-07)
 
 ### Bug Fixes
