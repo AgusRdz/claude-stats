@@ -69,9 +69,33 @@ docker-run-cmd: docker-build
 
 # ── Release ───────────────────────────────────────────────────────────────────
 
-## release: cross-compile all platforms to ./dist/
+## release: auto-detect bump from conventional commits, tag, and push
 .PHONY: release
 release:
+	@./scripts/release.sh
+	@git push --follow-tags
+
+## release-patch: force a patch version bump, tag, and push
+.PHONY: release-patch
+release-patch:
+	@./scripts/release.sh patch
+	@git push --follow-tags
+
+## release-minor: force a minor version bump, tag, and push
+.PHONY: release-minor
+release-minor:
+	@./scripts/release.sh minor
+	@git push --follow-tags
+
+## release-major: force a major version bump, tag, and push
+.PHONY: release-major
+release-major:
+	@./scripts/release.sh major
+	@git push --follow-tags
+
+## release-build: cross-compile all platforms to ./dist/
+.PHONY: release-build
+release-build:
 	@mkdir -p dist
 	GOOS=linux   GOARCH=amd64 go build $(LDFLAGS) -o dist/$(BINARY)-linux-amd64   $(CMD)
 	GOOS=linux   GOARCH=arm64 go build $(LDFLAGS) -o dist/$(BINARY)-linux-arm64   $(CMD)
@@ -104,11 +128,11 @@ release-docker:
 	cd dist && sha256sum * > checksums.txt
 	@echo "binaries in dist/"; ls -lh dist/
 
-## tag: create and push a version tag  (e.g. make tag VERSION=v0.2.0)
+## tag: create and push a version tag manually  (e.g. make tag VERSION=v0.2.0)
 .PHONY: tag
 tag:
 	@if [ -z "$(VERSION)" ] || [ "$(VERSION)" = "dev" ]; then \
-		echo "Usage: make tag VERSION=v0.2.0"; exit 1; fi
+		echo "Usage: make tag VERSION=v0.2.0  (prefer: make release)"; exit 1; fi
 	git tag -a $(VERSION) -m "Release $(VERSION)"
 	git push origin $(VERSION)
 	@echo "tagged $(VERSION) — GitHub Actions will build and publish the release"
