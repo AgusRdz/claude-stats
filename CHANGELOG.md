@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.3.0 (2026-04-07)
+
+### Features
+
+- add trends command and --json export for tokens/report/trends
+
+### Other
+
+- chore: add MIT LICENSE file
+- chore: remove Python package, moved to python-legacy branch
+- docs: add detailed per-command documentation with examples
+
+[Full changelog](https://github.com/Andrevops/claude-stats/compare/v0.2.4...v0.3.0)
+
 ## v0.2.4 (2026-04-07)
 
 ### Bug Fixes
