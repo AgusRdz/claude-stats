@@ -7,6 +7,8 @@ on:
 
 permissions:
   contents: write
+  id-token: write
+  attestations: write
 
 jobs:
   release:
@@ -44,6 +46,22 @@ jobs:
           sha256sum * > checksums.txt
           cat checksums.txt
 
+      - name: Sign checksums
+        env:
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+        run: |
+          echo "$SIGNING_KEY" | base64 -d > /tmp/signing.pem
+          openssl pkey -in /tmp/signing.pem -noout
+          openssl pkeyutl -sign -inkey /tmp/signing.pem -rawin -in dist/checksums.txt \
+            | xxd -p -c 256 | tr -d '\n' > dist/checksums.txt.sig
+          rm /tmp/signing.pem
+          echo "signature: $(cat dist/checksums.txt.sig)"
+
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: dist/claude-stats-*
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v3
         with:
@@ -65,4 +83,15 @@ jobs:
             **Go:**
             ```sh
             go install github.com/Andrevops/claude-stats/cmd/claude-stats@latest
+            ```
+
+            ## Verify
+
+            ```sh
+            # Verify build provenance
+            gh attestation verify claude-stats-linux-amd64 --repo Andrevops/claude-stats
+
+            # Verify checksum signature (requires public_key.pem from repo)
+            curl -fsSL https://raw.githubusercontent.com/Andrevops/claude-stats/main/public_key.pem -o public_key.pem
+            xxd -r -p checksums.txt.sig | openssl pkeyutl -verify -pubin -inkey public_key.pem -rawin -in checksums.txt -sigfile /dev/stdin
             ```
