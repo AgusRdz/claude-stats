@@ -55,8 +55,10 @@ URL="https://github.com/${REPO}/releases/download/${CLAUDE_STATS_VERSION}/${BINA
 echo "installing claude-stats ${CLAUDE_STATS_VERSION} (${OS}/${ARCH})..."
 
 mkdir -p "$INSTALL_DIR"
-curl -fsSL "$URL" -o "${INSTALL_DIR}/claude-stats${EXT}"
-chmod +x "${INSTALL_DIR}/claude-stats${EXT}"
+TMPBIN=$(mktemp "${INSTALL_DIR}/claude-stats.XXXXXX")
+curl -fsSL "$URL" -o "$TMPBIN"
+chmod +x "$TMPBIN"
+mv -f "$TMPBIN" "${INSTALL_DIR}/claude-stats${EXT}"
 
 echo "installed claude-stats to ${INSTALL_DIR}/claude-stats${EXT}"
 echo ""
