@@ -43,7 +43,7 @@ var allCommands = []command{
 func showMenu() {
 	fmt.Printf("\n%s", bold)
 	fmt.Println("  ╔═══════════════════════════════════════════════════╗")
-	fmt.Println("  ║        🔢  Claude Code Analytics Suite           ║")
+	fmt.Println("  ║            Claude Code Analytics Suite            ║")
 	fmt.Println("  ╚═══════════════════════════════════════════════════╝")
 	fmt.Printf("%s\n", reset)
 
