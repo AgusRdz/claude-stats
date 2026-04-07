@@ -4,8 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"path/filepath"
-	"sort"
+"sort"
 	"strings"
 	"time"
 
@@ -47,7 +46,7 @@ func loadBashPatterns() []string {
 
 func isBashAllowed(cmd string, patterns []string) bool {
 	for _, p := range patterns {
-		if ok, _ := filepath.Match(p, cmd); ok {
+		if fnMatch(p, cmd) {
 			return true
 		}
 	}

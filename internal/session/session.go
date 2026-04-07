@@ -163,12 +163,17 @@ func ParseAssistantMsg(raw json.RawMessage) (AssistantMsg, bool) {
 	return msg, true
 }
 
-// ParseToolResults decodes tool_result blocks from a user message content array.
+// ParseToolResults decodes tool_result blocks from a user message.
+// The raw JSON is the full message object: {"content": [...]}.
 func ParseToolResults(raw json.RawMessage) []ToolResult {
-	var blocks []ContentBlock
-	if err := json.Unmarshal(raw, &blocks); err != nil {
+	// First try as {"content": [...]} (user message envelope)
+	var envelope struct {
+		Content []ContentBlock `json:"content"`
+	}
+	if err := json.Unmarshal(raw, &envelope); err != nil {
 		return nil
 	}
+	blocks := envelope.Content
 	var results []ToolResult
 	for _, b := range blocks {
 		if b.Type == "tool_result" {

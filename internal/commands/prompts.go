@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"path/filepath"
 	"sort"
 	"strings"
 
@@ -14,6 +13,48 @@ import (
 	"github.com/Andrevops/claude-stats/internal/projects"
 	"github.com/Andrevops/claude-stats/internal/session"
 )
+
+// fnMatch implements Python's fnmatch.fnmatch: * matches everything including
+// spaces and path separators, ** is the same as *, ? matches one char.
+// This differs from filepath.Match where * does not match separators.
+func fnMatch(pattern, name string) bool {
+	return fnMatchImpl(pattern, name)
+}
+
+func fnMatchImpl(pattern, name string) bool {
+	for len(pattern) > 0 {
+		switch pattern[0] {
+		case '*':
+			// Consume consecutive *
+			for len(pattern) > 0 && pattern[0] == '*' {
+				pattern = pattern[1:]
+			}
+			if len(pattern) == 0 {
+				return true // trailing * matches everything
+			}
+			// Try matching rest of pattern at every position
+			for i := 0; i <= len(name); i++ {
+				if fnMatchImpl(pattern, name[i:]) {
+					return true
+				}
+			}
+			return false
+		case '?':
+			if len(name) == 0 {
+				return false
+			}
+			pattern = pattern[1:]
+			name = name[1:]
+		default:
+			if len(name) == 0 || pattern[0] != name[0] {
+				return false
+			}
+			pattern = pattern[1:]
+			name = name[1:]
+		}
+	}
+	return len(name) == 0
+}
 
 type allowPatterns struct {
 	bash, edit, write, read []string
@@ -62,7 +103,7 @@ func isAllowed(name string, inp json.RawMessage, ap allowPatterns) bool {
 		}
 		ri := session.ParseReadInput(inp)
 		for _, p := range ap.read {
-			if ok, _ := filepath.Match(p, ri.FilePath); ok {
+			if fnMatch(p, ri.FilePath) {
 				return true
 			}
 		}
@@ -70,7 +111,7 @@ func isAllowed(name string, inp json.RawMessage, ap allowPatterns) bool {
 	case "Bash":
 		bi := session.ParseBashInput(inp)
 		for _, p := range ap.bash {
-			if ok, _ := filepath.Match(p, bi.Command); ok {
+			if fnMatch(p, bi.Command) {
 				return true
 			}
 		}
@@ -78,7 +119,7 @@ func isAllowed(name string, inp json.RawMessage, ap allowPatterns) bool {
 	case "Edit":
 		ei := session.ParseEditInput(inp)
 		for _, p := range ap.edit {
-			if ok, _ := filepath.Match(p, ei.FilePath); ok {
+			if fnMatch(p, ei.FilePath) {
 				return true
 			}
 		}
@@ -86,7 +127,7 @@ func isAllowed(name string, inp json.RawMessage, ap allowPatterns) bool {
 	case "Write":
 		wi := session.ParseWriteInput(inp)
 		for _, p := range ap.write {
-			if ok, _ := filepath.Match(p, wi.FilePath); ok {
+			if fnMatch(p, wi.FilePath) {
 				return true
 			}
 		}
@@ -126,7 +167,7 @@ func suggestPathPattern(tool, fp string) string {
 	home, _ := os.UserHomeDir()
 	if strings.HasPrefix(fp, home) {
 		rel := fp[len(home)+1:]
-		parts := strings.Split(filepath.ToSlash(rel), "/")
+		parts := strings.Split(strings.ReplaceAll(rel, "\\", "/"), "/")
 		if len(parts) >= 2 {
 			return fmt.Sprintf("%s(%s/%s/**)", tool, home, strings.Join(parts[:2], "/"))
 		}
@@ -201,7 +242,7 @@ func Prompts(args []string) {
 					case "Edit":
 						ei := session.ParseEditInput(b.Input)
 						fp := projects.ShortenPath(ei.FilePath)
-						parts := strings.Split(filepath.ToSlash(fp), "/")
+						parts := strings.Split(strings.ReplaceAll(fp, "\\", "/"), "/")
 						key := fp
 						if len(parts) >= 2 {
 							key = strings.Join(parts[:2], "/") + "/**"
@@ -210,7 +251,7 @@ func Prompts(args []string) {
 					case "Write":
 						wi := session.ParseWriteInput(b.Input)
 						fp := projects.ShortenPath(wi.FilePath)
-						parts := strings.Split(filepath.ToSlash(fp), "/")
+						parts := strings.Split(strings.ReplaceAll(fp, "\\", "/"), "/")
 						key := fp
 						if len(parts) >= 2 {
 							key = strings.Join(parts[:2], "/") + "/**"
