@@ -12,7 +12,7 @@ import (
 )
 
 // version is set at build time via -ldflags.
-var version = "0.2.0"
+var version = "dev"
 
 const (
 	blue  = "\033[1;34m"
