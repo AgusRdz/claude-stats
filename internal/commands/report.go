@@ -54,6 +54,17 @@ func isBashAllowed(cmd string, patterns []string) bool {
 }
 
 func Report(args []string) {
+	outputJSON := false
+	filtered := []string{}
+	for _, a := range args {
+		if a == "--json" {
+			outputJSON = true
+		} else {
+			filtered = append(filtered, a)
+		}
+	}
+	args = filtered
+
 	targetDates, label := dates.ParseReportArgs(args)
 	if label == "" {
 		return
@@ -254,6 +265,63 @@ func Report(args []string) {
 	linesPerTurn := 0.0
 	if totalTurns > 0 {
 		linesPerTurn = float64(netLines) / float64(totalTurns)
+	}
+
+	if outputJSON {
+		type rptProjJSON struct {
+			Name     string  `json:"name"`
+			Sessions int     `json:"sessions"`
+			Messages int     `json:"messages"`
+			Lines    int     `json:"net_lines"`
+			Files    int     `json:"files"`
+			ErrPct   float64 `json:"error_pct"`
+		}
+		type rptToolJSON struct {
+			Name   string `json:"name"`
+			Calls  int    `json:"calls"`
+			Errors int    `json:"errors"`
+		}
+		var pjs []rptProjJSON
+		for name, p := range proj {
+			pNet := p.written + p.added - p.removed
+			ep := 0.0
+			if p.tools > 0 {
+				ep = float64(p.errors) / float64(p.tools) * 100
+			}
+			pjs = append(pjs, rptProjJSON{name, p.sessions, p.messages, pNet, len(p.files), ep})
+		}
+		sort.Slice(pjs, func(i, j int) bool { return pjs[i].Lines > pjs[j].Lines })
+
+		var tjs []rptToolJSON
+		for name, count := range toolCounts {
+			tjs = append(tjs, rptToolJSON{name, count, toolErrors[name]})
+		}
+		sort.Slice(tjs, func(i, j int) bool { return tjs[i].Calls > tjs[j].Calls })
+
+		out := map[string]interface{}{
+			"label":          label,
+			"sessions":       mainSessions,
+			"subagents":      subagentCount,
+			"projects_count": len(proj),
+			"messages":       totalMessages,
+			"turns":          totalTurns,
+			"tool_calls":     totalToolCalls,
+			"errors":         totalErrors,
+			"error_rate":     errRate,
+			"files":          len(filesTouched),
+			"cost":           totalCost,
+			"net_lines":      netLines,
+			"lines_written":  totalWritten,
+			"lines_added":    totalAdded,
+			"lines_removed":  totalRemoved,
+			"lines_per_turn": linesPerTurn,
+			"projects":       pjs,
+			"tools":          tjs,
+		}
+		enc := json.NewEncoder(os.Stdout)
+		enc.SetIndent("", "  ")
+		enc.Encode(out)
+		return
 	}
 
 	// ── Header

@@ -40,6 +40,7 @@ var allCommands = []command{
 	{"efficiency", "Efficiency", "Lines/turn, wasted turns, productivity ratios per project", commands.Efficiency},
 	{"report", "Weekly Report", "Executive summary combining all analytics into one view", commands.Report},
 	{"digest", "Work Digest", "What you worked on: tickets, branches, MRs, commits, files", commands.Digest},
+	{"trends", "Trends", "Week-over-week or month-over-month comparison with deltas", commands.Trends},
 }
 
 func showMenu() {

@@ -134,6 +134,26 @@ claude-stats digest --week
 claude-stats digest --ai          # includes AI-generated summary
 ```
 
+#### `trends` — Week-over-Week Comparison
+
+Compares current period against the previous equivalent period. Shows deltas for sessions, messages, cost, lines, errors, efficiency, and per-project breakdowns with trend arrows.
+
+```bash
+claude-stats trends              # this week vs last week (default)
+claude-stats trends --month      # this month vs last month
+claude-stats trends --yesterday  # yesterday vs day before
+```
+
+### JSON output
+
+The `tokens`, `report`, and `trends` commands support `--json` for structured output you can pipe into other tools:
+
+```bash
+claude-stats tokens --week --json
+claude-stats report --week --json | jq '.cost'
+claude-stats trends --month --json
+```
+
 ### Time filters
 
 All commands accept these options:

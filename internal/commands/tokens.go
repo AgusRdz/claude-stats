@@ -1,7 +1,9 @@
 package commands
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
 	"sort"
 	"strings"
 
@@ -42,6 +44,17 @@ type projTokens struct {
 }
 
 func Tokens(args []string) {
+	outputJSON := false
+	filtered := []string{}
+	for _, a := range args {
+		if a == "--json" {
+			outputJSON = true
+		} else {
+			filtered = append(filtered, a)
+		}
+	}
+	args = filtered
+
 	targetDates, label := dates.ParseArgs(args)
 	if label == "" {
 		return
@@ -114,6 +127,58 @@ func Tokens(args []string) {
 		totalCost += calcCost(*tc, m)
 	}
 	totalTokens := grand.input + grand.output + grand.cacheRead + grand.cacheCreate
+
+	if outputJSON {
+		type projJSON struct {
+			Name     string  `json:"name"`
+			Sessions int     `json:"sessions"`
+			Messages int     `json:"messages"`
+			Tools    int     `json:"tools"`
+			Output   int     `json:"output_tokens"`
+			Cost     float64 `json:"cost"`
+		}
+		type modelJSON struct {
+			Name   string  `json:"name"`
+			Input  int     `json:"input_tokens"`
+			Output int     `json:"output_tokens"`
+			Cost   float64 `json:"cost"`
+		}
+		var pjs []projJSON
+		for name, p := range proj {
+			c := 0.0
+			for m, tc := range p.models {
+				c += calcCost(*tc, m)
+			}
+			pjs = append(pjs, projJSON{name, p.sessions, p.messages, p.tools, p.output, c})
+		}
+		sort.Slice(pjs, func(i, j int) bool { return pjs[i].Cost > pjs[j].Cost })
+
+		var mjs []modelJSON
+		for name, tc := range modelsGlobal {
+			mjs = append(mjs, modelJSON{name, tc.input, tc.output, calcCost(*tc, name)})
+		}
+		sort.Slice(mjs, func(i, j int) bool { return mjs[i].Cost > mjs[j].Cost })
+
+		out := map[string]interface{}{
+			"label":         label,
+			"sessions":      mainSessions,
+			"subagents":     subagentCount,
+			"messages":      grandMessages,
+			"tool_calls":    grandTools,
+			"input_tokens":  grand.input,
+			"output_tokens": grand.output,
+			"cache_read":    grand.cacheRead,
+			"cache_create":  grand.cacheCreate,
+			"total_tokens":  totalTokens,
+			"total_cost":    totalCost,
+			"projects":      pjs,
+			"models":        mjs,
+		}
+		enc := json.NewEncoder(os.Stdout)
+		enc.SetIndent("", "  ")
+		enc.Encode(out)
+		return
+	}
 
 	// ── Summary
 	format.Header(fmt.Sprintf("🔢  CLAUDE CODE TOKEN USAGE — %s", label), "═")
