@@ -21,6 +21,26 @@ type heatSession struct {
 	cost     float64
 }
 
+// dowLabel returns a fixed-width (12-char) right-padded label for heatmap grid rows.
+// Single date: "Mon 04-07  ", multiple: "Mon        ", none: "Mon        "
+func dowLabel(d int, dates []string) string {
+	if len(dates) == 1 {
+		return fmt.Sprintf("%-3s %s  ", config.Days[d], dates[0][5:])
+	}
+	return fmt.Sprintf("%-3s        ", config.Days[d])
+}
+
+// dowLabelLeft returns a left-aligned label for daily summary rows.
+func dowLabelLeft(d int, dates []string) string {
+	if len(dates) == 1 {
+		return fmt.Sprintf("%s %s", config.Days[d], dates[0][5:])
+	}
+	if len(dates) > 1 {
+		return fmt.Sprintf("%s ×%d", config.Days[d], len(dates))
+	}
+	return config.Days[d]
+}
+
 func heatChar(value, maxVal float64) string {
 	if value == 0 {
 		return config.Heat[0]
@@ -156,6 +176,31 @@ func Heatmap(args []string) {
 		}
 	}
 
+	// Build DOW → date mapping for labels (from target dates, not session data)
+	dowDates := [7][]string{}
+	if targetDates != nil {
+		for _, dateStr := range targetDates {
+			dt, err := time.Parse("2006-01-02", dateStr)
+			if err != nil {
+				continue
+			}
+			dow := int(dt.Weekday()+6) % 7
+			dowDates[dow] = append(dowDates[dow], dateStr)
+		}
+	} else {
+		for dateStr := range dailyMessages {
+			dt, err := time.Parse("2006-01-02", dateStr)
+			if err != nil {
+				continue
+			}
+			dow := int(dt.Weekday()+6) % 7
+			dowDates[dow] = append(dowDates[dow], dateStr)
+		}
+	}
+	for d := 0; d < 7; d++ {
+		sort.Strings(dowDates[d])
+	}
+
 	// ── Output
 	format.Header(fmt.Sprintf("📊  CLAUDE CODE ACTIVITY HEATMAP — %s", label), "═")
 	fmt.Printf("\n  Timezone: %s\n", tzLabel)
@@ -165,7 +210,7 @@ func Heatmap(args []string) {
 	// ── Messages Heatmap
 	format.Header("💬  MESSAGES BY HOUR & DAY", "─")
 	fmt.Println()
-	fmt.Print("        ")
+	fmt.Print("              ")
 	for h := 0; h < 24; h++ {
 		if h%3 == 0 {
 			fmt.Printf("%2d ", h)
@@ -175,7 +220,7 @@ func Heatmap(args []string) {
 	}
 	fmt.Println()
 	for d := 0; d < 7; d++ {
-		fmt.Printf("  %s  ", config.Days[d])
+		fmt.Printf("  %s", dowLabel(d, dowDates[d]))
 		rowTotal := 0
 		for h := 0; h < 24; h++ {
 			fmt.Print(heatChar(float64(gridMessages[d][h]), maxMessages))
@@ -184,13 +229,13 @@ func Heatmap(args []string) {
 		fmt.Printf("  %5d\n", rowTotal)
 	}
 	fmt.Println()
-	fmt.Printf("        %snone %slow  %smed  %shigh %speak\n",
+	fmt.Printf("              %snone %slow  %smed  %shigh %speak\n",
 		config.Heat[0], config.Heat[1], config.Heat[2], config.Heat[3], config.Heat[4])
 
 	// ── Cost Heatmap
 	format.Header("💰  COST ($) BY HOUR & DAY", "─")
 	fmt.Println()
-	fmt.Print("        ")
+	fmt.Print("              ")
 	for h := 0; h < 24; h++ {
 		if h%3 == 0 {
 			fmt.Printf("%2d ", h)
@@ -200,7 +245,7 @@ func Heatmap(args []string) {
 	}
 	fmt.Println()
 	for d := 0; d < 7; d++ {
-		fmt.Printf("  %s  ", config.Days[d])
+		fmt.Printf("  %s", dowLabel(d, dowDates[d]))
 		rowCost := 0.0
 		for h := 0; h < 24; h++ {
 			fmt.Print(heatChar(gridCost[d][h], maxCost))
@@ -209,7 +254,7 @@ func Heatmap(args []string) {
 		fmt.Printf(" $%6.1f\n", rowCost)
 	}
 	fmt.Println()
-	fmt.Printf("        %s$0   %s<20%% %s<45%% %s<75%% %speak\n",
+	fmt.Printf("              %s$0   %s<20%% %s<45%% %s<75%% %speak\n",
 		config.Heat[0], config.Heat[1], config.Heat[2], config.Heat[3], config.Heat[4])
 
 	// ── Hourly Summary
@@ -256,13 +301,35 @@ func Heatmap(args []string) {
 		}
 	}
 
-	fmt.Printf("  %-6s %9s %9s %s\n", "Day", "Messages", "Cost", "")
-	fmt.Printf("  %s %s %s %s\n", repeat("─", 6), repeat("─", 9), repeat("─", 9), repeat("─", 35))
+	// Sort days chronologically by earliest date
+	type dowEntry struct {
+		dow      int
+		sortDate string
+	}
+	var dowOrder []dowEntry
 	for d := 0; d < 7; d++ {
+		sd := ""
+		if len(dowDates[d]) > 0 {
+			sd = dowDates[d][0]
+		} else {
+			// No data for this DOW — assign a synthetic date to keep Mon→Sun order
+			sd = fmt.Sprintf("9999-%02d", d)
+		}
+		dowOrder = append(dowOrder, dowEntry{d, sd})
+	}
+	sort.Slice(dowOrder, func(i, j int) bool { return dowOrder[i].sortDate < dowOrder[j].sortDate })
+
+	fmt.Printf("  %-12s %9s %9s %s\n", "Day", "Messages", "Cost", "")
+	fmt.Printf("  %s %s %s %s\n", repeat("─", 12), repeat("─", 9), repeat("─", 9), repeat("─", 35))
+	for _, e := range dowOrder {
+		d := e.dow
 		msgs := dowMessages[d]
 		cost := dowCost[d]
+		if msgs == 0 && cost == 0 {
+			continue
+		}
 		barStr := format.Bar(float64(msgs), float64(maxDOW), 35)
-		fmt.Printf("  %-6s %9d $%8.1f %s\n", config.Days[d], msgs, cost, barStr)
+		fmt.Printf("  %-12s %9d $%8.1f %s\n", dowLabelLeft(d, dowDates[d]), msgs, cost, barStr)
 	}
 
 	// ── Calendar View
