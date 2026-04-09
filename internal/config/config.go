@@ -72,7 +72,13 @@ var DestructiveCmds = map[string]bool{
 
 // Display
 var Days = []string{"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"}
-var Heat = []string{" · ", " ░ ", " ▒ ", " ▓ ", " █ "}
+var Heat = []string{
+	" \033[2m·\033[0m ",
+	" \033[38;5;33m░\033[0m ",
+	" \033[38;5;37m▒\033[0m ",
+	" \033[38;5;214m▓\033[0m ",
+	" \033[38;5;196m█\033[0m ",
+}
 
 // JiraPattern prefix list (checked via strings.HasPrefix in practice)
 var JiraPrefixes = []string{

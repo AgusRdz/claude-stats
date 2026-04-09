@@ -39,24 +39,47 @@ func Pct(n, total int) string {
 	return fmt.Sprintf("%.1f%%", float64(n)/float64(total)*100)
 }
 
-// Bar renders an ASCII progress bar.
+// Bar renders a colored progress bar with a teal→blue gradient.
 func Bar(n, maxVal float64, width int) string {
 	if maxVal == 0 {
-		return strings.Repeat("░", width)
+		return Dim + strings.Repeat("░", width) + Reset
 	}
 	ratio := n / maxVal
 	if ratio > 1 {
 		ratio = 1
 	}
 	filled := int(math.Round(ratio * float64(width)))
-	return strings.Repeat("█", filled) + strings.Repeat("░", width-filled)
+	empty := width - filled
+
+	if filled == 0 {
+		return Dim + strings.Repeat("░", width) + Reset
+	}
+
+	var b strings.Builder
+	prevColor := ""
+	for i := 0; i < filled; i++ {
+		t := float64(i) / float64(maxInt(width-1, 1))
+		c := gradientColor(t)
+		if c != prevColor {
+			b.WriteString(c)
+			prevColor = c
+		}
+		b.WriteString("█")
+	}
+	b.WriteString(Reset)
+	if empty > 0 {
+		b.WriteString(Dim)
+		b.WriteString(strings.Repeat("░", empty))
+		b.WriteString(Reset)
+	}
+	return b.String()
 }
 
-// Header prints a section header with a decorative border.
+// Header prints a section header with styled borders and bold text.
 func Header(text, char string) {
 	w := 70
 	border := strings.Repeat(char, w)
-	fmt.Printf("\n %s\n  %s\n %s\n", border, text, border)
+	fmt.Printf("\n %s%s%s\n  %s%s%s\n %s%s%s\n", Dim, border, Reset, Bold, text, Reset, Dim, border, Reset)
 }
 
 // FmtTokens formats token counts as human-readable (e.g., 1.2M, 45K).

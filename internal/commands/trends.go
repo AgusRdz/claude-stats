@@ -292,14 +292,14 @@ func Trends(args []string) {
 				fmt.Sprintf("$%.0f", r.curF),
 				fmt.Sprintf("$%.0f", r.preF),
 				deltaF(r.curF, r.preF),
-				arrowF(r.curF, r.preF))
+				format.ArrowColor(arrowF(r.curF, r.preF)))
 		} else {
 			fmt.Printf("  %-24s %12s %12s %6s %s\n",
 				r.label,
 				format.Fmt(r.cur),
 				format.Fmt(r.prev),
 				delta(r.cur, r.prev),
-				arrow(r.cur, r.prev))
+				format.ArrowColor(arrow(r.cur, r.prev)))
 		}
 	}
 
@@ -324,8 +324,8 @@ func Trends(args []string) {
 
 	fmt.Printf("\n  %-24s %12s %12s %8s\n", "Metric", "Current", "Previous", "Change")
 	fmt.Printf("  %-24s %12s %12s %8s\n", "────────────────────────", "────────────", "────────────", "────────")
-	fmt.Printf("  %-24s %12.1f %12.1f %6s %s\n", "Lines/turn", curLPT, prevLPT, deltaF(curLPT, prevLPT), arrowF(curLPT, prevLPT))
-	fmt.Printf("  %-24s %11.1f%% %11.1f%% %6s %s\n", "Error rate", curErrRate, prevErrRate, deltaF(curErrRate, prevErrRate), arrowF(curErrRate, prevErrRate))
+	fmt.Printf("  %-24s %12.1f %12.1f %6s %s\n", "Lines/turn", curLPT, prevLPT, deltaF(curLPT, prevLPT), format.ArrowColor(arrowF(curLPT, prevLPT)))
+	fmt.Printf("  %-24s %11.1f%% %11.1f%% %6s %s\n", "Error rate", curErrRate, prevErrRate, deltaF(curErrRate, prevErrRate), format.ArrowColor(arrowF(curErrRate, prevErrRate)))
 
 	// ── Project comparison
 	allProjects := map[string]bool{}
@@ -365,7 +365,7 @@ func Trends(args []string) {
 				format.Fmt(r.curL),
 				format.Fmt(r.prevL),
 				delta(r.curL, r.prevL),
-				arrow(r.curL, r.prevL))
+				format.ArrowColor(arrow(r.curL, r.prevL)))
 		}
 	}
 
@@ -373,10 +373,10 @@ func Trends(args []string) {
 	format.Header("🔢  TOKEN COMPARISON", "─")
 	fmt.Printf("\n  %-24s %14s %14s %8s\n", "Category", "Current", "Previous", "Change")
 	fmt.Printf("  %-24s %14s %14s %8s\n", "────────────────────────", "──────────────", "──────────────", "────────")
-	fmt.Printf("  %-24s %14s %14s %6s %s\n", "Input", format.Fmt(cur.input), format.Fmt(prev.input), delta(cur.input, prev.input), arrow(cur.input, prev.input))
-	fmt.Printf("  %-24s %14s %14s %6s %s\n", "Output", format.Fmt(cur.output), format.Fmt(prev.output), delta(cur.output, prev.output), arrow(cur.output, prev.output))
-	fmt.Printf("  %-24s %14s %14s %6s %s\n", "Cache read", format.Fmt(cur.cacheRead), format.Fmt(prev.cacheRead), delta(cur.cacheRead, prev.cacheRead), arrow(cur.cacheRead, prev.cacheRead))
-	fmt.Printf("  %-24s %14s %14s %6s %s\n", "Cache create", format.Fmt(cur.cacheCreate), format.Fmt(prev.cacheCreate), delta(cur.cacheCreate, prev.cacheCreate), arrow(cur.cacheCreate, prev.cacheCreate))
+	fmt.Printf("  %-24s %14s %14s %6s %s\n", "Input", format.Fmt(cur.input), format.Fmt(prev.input), delta(cur.input, prev.input), format.ArrowColor(arrow(cur.input, prev.input)))
+	fmt.Printf("  %-24s %14s %14s %6s %s\n", "Output", format.Fmt(cur.output), format.Fmt(prev.output), delta(cur.output, prev.output), format.ArrowColor(arrow(cur.output, prev.output)))
+	fmt.Printf("  %-24s %14s %14s %6s %s\n", "Cache read", format.Fmt(cur.cacheRead), format.Fmt(prev.cacheRead), delta(cur.cacheRead, prev.cacheRead), format.ArrowColor(arrow(cur.cacheRead, prev.cacheRead)))
+	fmt.Printf("  %-24s %14s %14s %6s %s\n", "Cache create", format.Fmt(cur.cacheCreate), format.Fmt(prev.cacheCreate), delta(cur.cacheCreate, prev.cacheCreate), format.ArrowColor(arrow(cur.cacheCreate, prev.cacheCreate)))
 
 	// ── Verdict
 	format.Header("💡  SUMMARY", "─")

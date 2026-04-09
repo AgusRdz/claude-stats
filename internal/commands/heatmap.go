@@ -229,11 +229,7 @@ func Heatmap(args []string) {
 		if msgs == 0 && tools == 0 {
 			continue
 		}
-		barLen := 0
-		if maxHourly > 0 {
-			barLen = msgs * 35 / maxHourly
-		}
-		barStr := repeat("█", barLen) + repeat("░", 35-barLen)
+		barStr := format.Bar(float64(msgs), float64(maxHourly), 35)
 		peak := ""
 		if h == peakHour {
 			peak = " ← PEAK"
@@ -265,11 +261,7 @@ func Heatmap(args []string) {
 	for d := 0; d < 7; d++ {
 		msgs := dowMessages[d]
 		cost := dowCost[d]
-		barLen := 0
-		if maxDOW > 0 {
-			barLen = msgs * 35 / maxDOW
-		}
-		barStr := repeat("█", barLen) + repeat("░", 35-barLen)
+		barStr := format.Bar(float64(msgs), float64(maxDOW), 35)
 		fmt.Printf("  %-6s %9d $%8.1f %s\n", config.Days[d], msgs, cost, barStr)
 	}
 
@@ -304,11 +296,7 @@ func Heatmap(args []string) {
 			tokens := dailyTokens[date]
 			cost := dailyCost[date]
 			sess := dailySessions[date]
-			barLen := 0
-			if maxDaily > 0 {
-				barLen = msgs * 25 / maxDaily
-			}
-			barStr := repeat("█", barLen) + repeat("░", 25-barLen)
+			barStr := format.Bar(float64(msgs), float64(maxDaily), 25)
 			dt, _ := time.Parse("2006-01-02", date)
 			marker := ""
 			if dt.Weekday() == time.Saturday || dt.Weekday() == time.Sunday {

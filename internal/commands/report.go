@@ -660,9 +660,9 @@ func Report(args []string) {
 			grade = "🟡"
 		}
 		fmt.Printf("  %s %-22s %5.0f/100  %s\n",
-			grade, e.name, e.score, format.Bar(e.score, 100, 20))
+			grade, e.name, e.score, format.BarWith(e.score, 100, 20, format.ScoreColor(e.score)))
 	}
-	fmt.Printf("\n  %-25s %5.0f/100  %s\n", "Overall Score", overall, format.Bar(overall, 100, 20))
+	fmt.Printf("\n  %-25s %5.0f/100  %s\n", "Overall Score", overall, format.BarWith(overall, 100, 20, format.ScoreColor(overall)))
 	gradeEmoji, gradeText := scoreGrade(overall)
 	fmt.Printf("  %s  Grade: %s\n", gradeEmoji, gradeText)
 
