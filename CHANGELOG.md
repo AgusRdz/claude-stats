@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.4.1 (2026-04-09)
+
+### Bug Fixes
+
+- show dates in heatmap DOW grids to prevent future-day confusion
+
+### Other
+
+- docs: update README with color feature descriptions
+
+[Full changelog](https://github.com/Andrevops/claude-stats/compare/v0.4.0...v0.4.1)
+
 ## v0.4.0 (2026-04-09)
 
 ### Features
