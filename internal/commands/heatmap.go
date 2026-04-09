@@ -339,8 +339,8 @@ func Heatmap(args []string) {
 		fmt.Printf("  %-12s %9d $%8.1f %s\n", dowLabelLeft(d, dowDates[d]), msgs, cost, barStr)
 	}
 
-	// ── Calendar View
-	if len(dailyMessages) > 0 {
+	// ── Calendar View (all-time only — filtered views already show per-date data above)
+	if targetDates == nil && len(dailyMessages) > 0 {
 		format.Header("📆  DAILY ACTIVITY (last 30 days)", "─")
 		fmt.Println()
 		var sortedDates []string
