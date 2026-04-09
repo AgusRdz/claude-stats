@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.4.0 (2026-04-09)
+
+### Features
+
+- add ANSI 256-color support for charts, heatmaps, and scorecard
+
+[Full changelog](https://github.com/Andrevops/claude-stats/compare/v0.3.0...v0.4.0)
+
 ## v0.3.0 (2026-04-07)
 
 ### Features
