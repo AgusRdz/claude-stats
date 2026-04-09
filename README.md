@@ -4,6 +4,8 @@ Analytics suite for [Claude Code](https://docs.anthropic.com/en/docs/claude-code
 
 All data is read locally from `~/.claude/projects/` session files. Nothing is sent anywhere.
 
+**Color-coded terminal output** — gradient bars, colored heatmaps, semantic scorecards, and trend arrows render beautifully in any 256-color terminal.
+
 ## Install
 
 ### One-liner (Linux / macOS / WSL)
@@ -87,7 +89,7 @@ claude-stats prompts --week
 
 #### `heatmap` — Activity Heatmap
 
-ASCII heatmaps showing messages and cost by hour-of-day and day-of-week. Includes hourly/daily summaries, a calendar view of the last 30 days, top sessions by cost, and peak hour detection. Uses your system timezone.
+Color-coded heatmaps (blue→teal→amber→red) showing messages and cost by hour-of-day and day-of-week. Includes hourly/daily summaries with gradient bars, a calendar view of the last 30 days, top sessions by cost, and peak hour detection. Uses your system timezone.
 
 ```bash
 claude-stats heatmap --month
@@ -119,7 +121,7 @@ claude-stats efficiency --week
 
 #### `report` — Executive Summary
 
-Combines all analytics into one compact view: overview, daily activity sparkline, project leaderboard, top tools, session health, peak hours, permission prompts, and a 5-metric scorecard with an overall grade.
+Combines all analytics into one compact view: overview, daily activity sparkline, project leaderboard, top tools, session health, peak hours, permission prompts, and a color-coded scorecard (green/yellow/red) with an overall grade.
 
 ```bash
 claude-stats report --week
@@ -136,7 +138,7 @@ claude-stats digest --ai          # includes AI-generated summary
 
 #### `trends` — Week-over-Week Comparison
 
-Compares current period against the previous equivalent period. Shows deltas for sessions, messages, cost, lines, errors, efficiency, and per-project breakdowns with trend arrows.
+Compares current period against the previous equivalent period. Shows deltas for sessions, messages, cost, lines, errors, efficiency, and per-project breakdowns with colored trend arrows (green ▲ / red ▼).
 
 ```bash
 claude-stats trends              # this week vs last week (default)
