@@ -289,8 +289,7 @@ func Heatmap(args []string) {
 	}
 
 	// ── Daily Summary
-	format.Header("📅  DAILY SUMMARY", "─")
-	fmt.Println()
+	// Always compute DOW totals — used here and in the insights section below.
 	dowMessages := [7]int{}
 	dowCost := [7]float64{}
 	for d := 0; d < 7; d++ {
@@ -299,6 +298,10 @@ func Heatmap(args []string) {
 			dowCost[d] += gridCost[d][h]
 		}
 	}
+
+	format.Header("📅  DAILY SUMMARY", "─")
+	fmt.Println()
+
 	maxDOW := 0
 	for d := 0; d < 7; d++ {
 		if dowMessages[d] > maxDOW {
@@ -306,7 +309,10 @@ func Heatmap(args []string) {
 		}
 	}
 
-	// Sort days chronologically by earliest date
+	// Sort rows chronologically by earliest date in each DOW slot so that
+	// filtered views (e.g. --week spanning two calendar weeks) display days
+	// in actual date order rather than Mon→Sun, preventing past days from
+	// appearing to be future ones.
 	type dowEntry struct {
 		dow      int
 		sortDate string
@@ -317,8 +323,7 @@ func Heatmap(args []string) {
 		if len(dowDates[d]) > 0 {
 			sd = dowDates[d][0]
 		} else {
-			// No data for this DOW — assign a synthetic date to keep Mon→Sun order
-			sd = fmt.Sprintf("9999-%02d", d)
+			sd = fmt.Sprintf("9999-%02d", d) // no data: keep Mon→Sun fallback order
 		}
 		dowOrder = append(dowOrder, dowEntry{d, sd})
 	}
@@ -330,9 +335,6 @@ func Heatmap(args []string) {
 		d := e.dow
 		msgs := dowMessages[d]
 		cost := dowCost[d]
-		if msgs == 0 && cost == 0 {
-			continue
-		}
 		barStr := format.Bar(float64(msgs), float64(maxDOW), 35)
 		fmt.Printf("  %-12s %9d $%8.1f %s\n", dowLabelLeft(d, dowDates[d]), msgs, cost, barStr)
 	}
