@@ -67,6 +67,7 @@ func Heatmap(args []string) {
 		return
 	}
 	files := session.Find(targetDates, false)
+	dateSet := dates.DateSet(targetDates)
 	tzLabel := dates.TZLabel()
 
 	if len(files) == 0 {
@@ -106,6 +107,10 @@ func Heatmap(args []string) {
 			dow := int(localDT.Weekday()+6) % 7 // Mon=0
 			hour := localDT.Hour()
 			dateStr := localDT.Format("2006-01-02")
+
+			if targetDates != nil && !dateSet[dateStr] {
+				return
+			}
 
 			if (line.Type == "human" || line.Type == "assistant") && ok {
 				gridMessages[dow][hour]++
